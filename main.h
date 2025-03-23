@@ -6,10 +6,10 @@
 #define STA 0x10
 #define LDA 0x20
 #define ADD 0x30
-#define NOT 0x60
-#define JMP 0x80
-#define JN 0x90
-#define JZ 0xA0
+// #define NOT 0x60
+// #define JMP 0x80
+// #define JN 0x90
+// #define JZ 0xA0
 #define HLT 0xF0
 
 typedef struct datacodigo {
@@ -24,3 +24,16 @@ typedef struct datavalor {
     __uint8_t valor;
     struct datavalor *prox;
 } DATAVALOR;
+
+DATACODIGO *init_datacodigo();
+void inserir_cod(DATACODIGO *datacodigo, __uint8_t instrucao, __uint8_t variavel, bool tem2bytes);
+void imprimir_cod(DATACODIGO *datacodigo);
+void excluir_cod(DATACODIGO *datacodigo);
+__uint8_t obter_dado_cod(FILE *file);
+
+DATAVALOR *init_datavalor();
+void inserir_val(DATAVALOR *datavalor, __uint8_t variavel, __uint8_t valor);
+void imprimir_val(DATAVALOR *datavalor);
+void excluir_val(DATAVALOR *datavalor);
+
+void limpa_linha(char *linha);

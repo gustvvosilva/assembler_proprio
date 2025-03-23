@@ -1,5 +1,135 @@
 #include "main.h"
 
+DATACODIGO *init_datacodigo() {
+    DATACODIGO *nova = (DATACODIGO *) malloc(sizeof(DATACODIGO));
+    nova->instrucao = 0;
+    nova->variavel = 0;
+    nova->tem2bytes = false;
+    nova->prox = NULL;
+    return nova;
+}
+
+void inserir_cod(DATACODIGO *datacodigo, __uint8_t instrucao, __uint8_t variavel, bool tem2bytes) {
+
+    if(datacodigo->prox != NULL) {
+        inserir_cod(datacodigo->prox, instrucao, variavel, tem2bytes);
+        return;
+    }
+
+    DATACODIGO *nova = (DATACODIGO *) malloc(sizeof(DATACODIGO));
+    nova->instrucao = instrucao;
+    nova->variavel = variavel;
+    nova->tem2bytes = tem2bytes;
+    nova->prox = NULL;
+    datacodigo->prox = nova;
+    return;
+}
+
+void imprimir_cod(DATACODIGO *datacodigo) {
+
+    DATACODIGO *auxiliar = datacodigo;
+
+    printf("Datacodigo:\n");
+    while (auxiliar != NULL) {
+        printf("> %02x - %02x\n", auxiliar->instrucao, auxiliar->variavel);
+        auxiliar = auxiliar->prox;
+    }
+    printf("\n");
+    return;
+}
+
+void excluir_cod(DATACODIGO *datacodigo) {
+
+    DATACODIGO *apagar;
+    DATACODIGO *auxiliar = datacodigo;
+
+    while (auxiliar != NULL) {
+        apagar = auxiliar;
+        auxiliar = auxiliar->prox;
+        free(apagar);
+    }
+
+    printf("Datacodigo apagado com sucesso.\n");
+    return;
+}
+
+__uint8_t obter_dado_cod(FILE *file) {
+
+    char leitura[1];
+    __uint8_t variavel[1];
+
+    for(;;) {
+
+        fread(leitura, 1, 1, file);
+
+        // printf("C %c\n", *leitura);
+
+        if(*leitura != 32 && *leitura != 10)
+        {
+            variavel[0] = *leitura;
+        }
+        else
+        {
+            printf(">L %c = %02x\n", variavel[0], variavel[0]);
+            // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
+            break;
+        }
+    }
+    return variavel[0];
+}
+
+DATAVALOR *init_datavalor() {
+    DATAVALOR *nova = (DATAVALOR *) malloc(sizeof(DATAVALOR));
+    nova->variavel = 0;
+    nova->valor = 0;
+    nova->prox = NULL;
+    return nova;
+}
+
+void inserir_val(DATAVALOR *datavalor, __uint8_t variavel, __uint8_t valor) {
+
+    if(datavalor->prox != NULL) {
+        inserir_val(datavalor->prox, variavel, valor);
+        return;
+    }
+
+    DATAVALOR *nova = (DATAVALOR *) malloc(sizeof(DATAVALOR));
+    nova->variavel = variavel;
+    nova->valor = valor;
+    nova->prox = NULL;
+    datavalor->prox = nova;
+    return;
+}
+
+void imprimir_val(DATAVALOR *datavalor) {
+
+    DATAVALOR *auxiliar = datavalor;
+
+    printf("Datavalor:\n");
+    while (auxiliar != NULL) {
+        printf("> %02x - %02x\n", auxiliar->variavel, auxiliar->valor);
+        auxiliar = auxiliar->prox;
+    }
+    printf("\n");
+    return;
+}
+
+void excluir_val(DATAVALOR *datavalor) {
+
+    DATAVALOR *apagar;
+    DATAVALOR *auxiliar = datavalor;
+
+    while (auxiliar != NULL) {
+        apagar = auxiliar;
+        auxiliar = auxiliar->prox;
+        free(apagar);
+    }
+
+    printf("Datavalor apagado com sucesso.\n");
+    return;
+}
+
+
 void limpa_linha(char *linha) {
     for (int i = 0; linha[i] != 0; i++)
         linha[i] = 0;
@@ -15,12 +145,14 @@ int main() {
     char linha[8];
     int i = 0;
 
+    DATACODIGO *datacodigo = init_datacodigo();
+
     for(;;) {
 
         if(!fread(caractere, 1, 1, file))
             break;
 
-        printf("C %c\n", *caractere);
+        // printf("C %c\n", *caractere);
 
         if(*caractere != 32 && *caractere != 10)
         {
@@ -32,13 +164,60 @@ int main() {
             printf(">L %s\n", linha);
             // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
 
-
+            if(strcmp(linha, "STA") == 0) {
+                inserir_cod(datacodigo, STA, obter_dado_cod(file), true);
+            }
+            else if (strcmp(linha, "LDA") == 0) {
+                inserir_cod(datacodigo, LDA, obter_dado_cod(file), true);               
+            }
+            else if (strcmp(linha, "ADD") == 0) {
+                inserir_cod(datacodigo, ADD, obter_dado_cod(file), true);
+            }
+            else if (strcmp(linha, "HLT") == 0) {
+                inserir_cod(datacodigo, HLT, 0, false);
+            }
 
             limpa_linha(linha);
             i = 0;
         }
     }
-
     fclose(file);
+
+    imprimir_cod(datacodigo);
+    excluir_cod(datacodigo);
+
+    FILE *file2 = fopen("entrada2.txt", "r");
+    if(file2 == NULL) return -1;
+
+    DATAVALOR *datavalor = init_datavalor();
+
+    limpa_linha(linha);
+    i = 0;
+    for(;;) {
+
+        if(!fread(caractere, 1, 1, file2))
+            break;
+
+        // printf("C %c\n", *caractere);
+
+        if(*caractere != 32 && *caractere != 10)
+        {
+            linha[i] = *caractere;
+            i++;
+        }
+        else
+        {
+            printf(">L %s\n", linha);
+            // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
+
+            limpa_linha(linha);
+            i = 0;
+        }
+    }
+    fclose(file2);
+
+    imprimir_val(datavalor);
+    excluir_val(datavalor);
+
     return 0;
 }

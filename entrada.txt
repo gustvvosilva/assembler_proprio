@@ -2,7 +2,3 @@ LDA A
 ADD B
 STA X
 HLT
-
-A DB 50
-B DB 10
-X DB ?
