@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define STA 0x10
+#define LDA 0x20
+#define ADD 0x30
+#define NOT 0x60
+#define JMP 0x80
+#define JN 0x90
+#define JZ 0xA0
+#define HLT 0xF0
+
+typedef struct datacodigo {
+    __uint8_t instrucao;
+    __uint8_t variavel;
+    bool tem2bytes;
+    struct datacodigo *prox;
+} DATACODIGO;
+
+typedef struct datavalor {
+    __uint8_t variavel;
+    __uint8_t valor;
+    struct datavalor *prox;
+} DATAVALOR;

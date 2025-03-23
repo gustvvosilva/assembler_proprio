@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include "main.h"
 
 void limpa_linha(char *linha) {
     for (int i = 0; linha[i] != 0; i++)
@@ -32,8 +29,11 @@ int main() {
         }
         else
         {
-            printf("L %s\n", linha);
-            printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
+            printf(">L %s\n", linha);
+            // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
+
+
+
             limpa_linha(linha);
             i = 0;
         }
