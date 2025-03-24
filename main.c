@@ -129,6 +129,46 @@ void excluir_val(DATAVALOR *datavalor) {
     return;
 }
 
+__uint8_t obter_dado_val(FILE *file2) {
+
+    char caractere[1];
+    char linha[8] = {0};
+    int i = 0;
+    __uint8_t valor;
+
+    for(;;) {
+
+        fread(caractere, 1, 1, file2);
+        // printf("C %c\n", *caractere);
+
+        if(*caractere != 32 && *caractere != 10)
+        {
+            linha[i] = *caractere;
+            i++;
+        }
+        else
+        {
+            printf(">L %s\n", linha);
+            // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
+
+            if(strcmp(linha, "DB") != 0) {
+                if(strcmp(linha, "?") == 0){
+                    valor = 0;
+                    break;
+                }
+                else
+                {
+                    valor = atoi(linha);
+                    break;
+                }
+            }
+
+            limpa_linha(linha);
+            i = 0;
+        }
+    }
+    return valor;
+}
 
 void limpa_linha(char *linha) {
     for (int i = 0; linha[i] != 0; i++)
@@ -183,9 +223,6 @@ int main() {
     }
     fclose(file);
 
-    imprimir_cod(datacodigo);
-    excluir_cod(datacodigo);
-
     FILE *file2 = fopen("entrada2.txt", "r");
     if(file2 == NULL) return -1;
 
@@ -210,13 +247,55 @@ int main() {
             printf(">L %s\n", linha);
             // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
 
+            if((linha[0] >= 0x41 && linha[0] <= 0x5a) || (linha[0] >= 0x61 && linha[0] <= 0x7a)) {
+                inserir_val(datavalor, linha[0], obter_dado_val(file2));
+            }
+
             limpa_linha(linha);
             i = 0;
         }
     }
     fclose(file2);
 
+    imprimir_cod(datacodigo);
     imprimir_val(datavalor);
+    
+    // FILE *file3 = fopen("soma.mem", "rb");
+    // if(file3 == NULL) return -1;
+
+    // __uint8_t bytes[516];
+
+    // fread(bytes, 1, 516, file);
+    // fclose(file3);
+    
+    // printf("\nHEXDUMP:");
+    // for(int i = 0; i < 516; i++) {
+
+    //     if (i % 2 == 0)
+    //         printf(" ");
+    //     if (i % 16 == 0)
+    //         printf("\n%07x ", i);
+
+    //     printf("%02x", bytes[i]);
+    // }
+    // printf("\n");    
+
+    FILE *memoria = fopen("memoria.mem", "wb");
+    if(memoria == NULL) return -1;
+
+    __uint8_t byteZerado[512] = {0x00};
+
+    __uint32_t memoriaID[] = {0x52444e03};  // Little Endian
+
+    fwrite(memoriaID, 4, 1, memoria);
+
+    fwrite(byteZerado, 1, 512, memoria);
+
+    fclose(memoria);
+
+
+
+    excluir_cod(datacodigo);
     excluir_val(datavalor);
 
     return 0;
