@@ -36,5 +36,7 @@ DATAVALOR *init_datavalor();
 void inserir_val(DATAVALOR *datavalor, __uint8_t variavel, __uint8_t valor);
 void imprimir_val(DATAVALOR *datavalor);
 void excluir_val(DATAVALOR *datavalor);
+__uint8_t obter_dado_val(FILE *file2);
+__uint8_t procurar_variavel(DATAVALOR *datavalor, __uint8_t var);
 
 void limpa_linha(char *linha);

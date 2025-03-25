@@ -1,0 +1,10 @@
+.DATA
+A DB 50
+B DB 10
+X DB ?
+
+.CODE
+LDA A
+ADD B
+STA X
+HLT

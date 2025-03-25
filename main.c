@@ -367,7 +367,7 @@ int main() {
 
         printf("%02x", bytes[i]);
     }
-    printf("\n");    
-
+    printf("\n");
+    
     return 0;
 }
