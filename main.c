@@ -82,6 +82,7 @@ DATAVALOR *init_datavalor() {
     DATAVALOR *nova = (DATAVALOR *) malloc(sizeof(DATAVALOR));
     nova->variavel = 0;
     nova->valor = 0;
+    nova->endereco = 0;
     nova->prox = NULL;
     return nova;
 }
@@ -96,6 +97,7 @@ void inserir_val(DATAVALOR *datavalor, __uint8_t variavel, __uint8_t valor) {
     DATAVALOR *nova = (DATAVALOR *) malloc(sizeof(DATAVALOR));
     nova->variavel = variavel;
     nova->valor = valor;
+    nova->endereco = 0;
     nova->prox = NULL;
     datavalor->prox = nova;
     return;
@@ -107,7 +109,7 @@ void imprimir_val(DATAVALOR *datavalor) {
 
     printf("Datavalor:\n");
     while (auxiliar != NULL) {
-        printf("> %02x - %02x\n", auxiliar->variavel, auxiliar->valor);
+        printf("> %02x - %02x %02x\n", auxiliar->variavel, auxiliar->valor, auxiliar->endereco);
         auxiliar = auxiliar->prox;
     }
     printf("\n");
@@ -168,6 +170,23 @@ __uint8_t obter_dado_val(FILE *file2) {
         }
     }
     return valor;
+}
+
+__uint8_t procurar_variavel(DATAVALOR *datavalor, __uint8_t var) {
+
+    DATAVALOR *auxiliar = datavalor;
+    __uint8_t endereco = 0;
+
+    while(auxiliar != NULL) {
+        printf("OIE\n");
+        if(auxiliar->variavel == var) {
+            endereco = auxiliar->endereco;
+            break;
+        }
+        auxiliar = auxiliar->prox;
+    }
+
+    return endereco;
 }
 
 void limpa_linha(char *linha) {
@@ -259,44 +278,96 @@ int main() {
 
     imprimir_cod(datacodigo);
     imprimir_val(datavalor);
-    
-    // FILE *file3 = fopen("soma.mem", "rb");
-    // if(file3 == NULL) return -1;
 
-    // __uint8_t bytes[516];
-
-    // fread(bytes, 1, 516, file);
-    // fclose(file3);
-    
-    // printf("\nHEXDUMP:");
-    // for(int i = 0; i < 516; i++) {
-
-    //     if (i % 2 == 0)
-    //         printf(" ");
-    //     if (i % 16 == 0)
-    //         printf("\n%07x ", i);
-
-    //     printf("%02x", bytes[i]);
-    // }
-    // printf("\n");    
-
-    FILE *memoria = fopen("memoria.mem", "wb");
-    if(memoria == NULL) return -1;
-
-    __uint8_t byteZerado[512] = {0x00};
+    FILE *memoria_inicial = fopen("memoria.mem", "wb");
+    if(memoria_inicial == NULL) return -1;
 
     __uint32_t memoriaID[] = {0x52444e03};  // Little Endian
+    __uint8_t byteZerado[512] = {0x00};
 
-    fwrite(memoriaID, 4, 1, memoria);
+    fwrite(memoriaID, 4, 1, memoria_inicial);
+    fwrite(byteZerado, 1, 512, memoria_inicial);
+    fclose(memoria_inicial);
 
-    fwrite(byteZerado, 1, 512, memoria);
+    FILE *memoria = fopen("memoria.mem", "r+b");
+    if(memoria == NULL) return -1;
+
+    DATACODIGO *datacodigo_aux = datacodigo->prox;
+    DATAVALOR *datavalor_aux = datavalor->prox;
+
+    int u = 4;
+
+    while(datacodigo_aux != NULL) {
+        if(datacodigo_aux->tem2bytes)
+            u += 4;
+        else
+            u += 2;
+
+        datacodigo_aux = datacodigo_aux->prox;
+    }
+    printf("U = %d\n", u);
+
+    while(datavalor_aux != NULL) {
+
+        fseek(memoria, u, SEEK_SET);
+        fwrite(&datavalor_aux->valor, 1, 1, memoria);
+        datavalor_aux->endereco = u;
+        datavalor_aux = datavalor_aux->prox;
+        u += 2;
+    }
+    
+    __uint8_t endereco;
+    u = 4;
+    datacodigo_aux = datacodigo->prox;
+    while(datacodigo_aux != NULL) {
+
+        fseek(memoria, u, SEEK_SET);
+        fwrite(&datacodigo_aux->instrucao, 1, 1, memoria);
+        if(datacodigo_aux->tem2bytes) {
+            u += 2;
+            fseek(memoria, u, SEEK_SET);
+            // fwrite(
+            //     &datacodigo_aux->variavel,
+            //     1, 1, memoria
+            // );
+            endereco = (procurar_variavel(datavalor->prox, datacodigo_aux->variavel) - 4) / 2;
+            printf("ssss %02x\n", endereco);
+
+            fwrite(
+                &endereco,
+                1, 1, memoria
+            );
+        }
+        datacodigo_aux = datacodigo_aux->prox;
+        u += 2;
+    }
+
 
     fclose(memoria);
 
-
-
+    imprimir_val(datavalor);
     excluir_cod(datacodigo);
     excluir_val(datavalor);
+
+    FILE *file3 = fopen("memoria.mem", "rb");
+    if(file3 == NULL) return -1;
+
+    __uint8_t bytes[516];
+
+    fread(bytes, 1, 516, file);
+    fclose(file3);
+    
+    printf("\nHEXDUMP:");
+    for(int i = 0; i < 516; i++) {
+
+        if (i % 2 == 0)
+            printf(" ");
+        if (i % 16 == 0)
+            printf("\n%07x ", i);
+
+        printf("%02x", bytes[i]);
+    }
+    printf("\n");    
 
     return 0;
 }

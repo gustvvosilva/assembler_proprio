@@ -22,6 +22,7 @@ typedef struct datacodigo {
 typedef struct datavalor {
     __uint8_t variavel;
     __uint8_t valor;
+    __uint8_t endereco;
     struct datavalor *prox;
 } DATAVALOR;
 
