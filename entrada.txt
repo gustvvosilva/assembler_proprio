@@ -1,4 +1,0 @@
-LDA A
-ADD B
-STA X
-HLT
