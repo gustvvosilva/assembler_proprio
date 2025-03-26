@@ -5,14 +5,14 @@ void obter_tokens(FILE *entrada, DATACODIGO *datacodigo, DATAVALOR *datavalor) {
     char caractere[1];
     char linha[8] = {0};
     int i = 0;
-    bool lendo_data;
-    bool lendo_code;
+    bool lendo_data = false;
+    bool lendo_code = false;
 
     while(fread(caractere, 1, 1, entrada)) {
         
         // printf("-C %c\n", *caractere);
 
-        if(*caractere != 32 && *caractere != 10)
+        if(*caractere != 0x20 && *caractere != 0x0a)
         {
             linha[i] = *caractere;
             i++;
@@ -21,11 +21,21 @@ void obter_tokens(FILE *entrada, DATACODIGO *datacodigo, DATAVALOR *datavalor) {
         {
             printf(">L %s\n", linha);
 
-            if(strcmp(linha, ".DATA") == 0) {
+            if(linha[0] == 0x3b)
+            {
+                while(*caractere != 0x0a)
+                {
+                    if(!fread(caractere, 1, 1, entrada))
+                        break;
+                }
+            }
+            else if(strcmp(linha, ".DATA") == 0)
+            {
                 lendo_data = true;
                 lendo_code = false;
             }
-            else if (strcmp(linha, ".CODE") == 0) {
+            else if (strcmp(linha, ".CODE") == 0)
+            {
                 lendo_data = false;
                 lendo_code = true;
             } 
@@ -37,7 +47,15 @@ void obter_tokens(FILE *entrada, DATACODIGO *datacodigo, DATAVALOR *datavalor) {
             }
             else if(lendo_code)
             {
-                if(strcmp(linha, "STA") == 0) {
+                if(strcmp(linha, ".ORG") == 0)
+                {
+                    while(*caractere != 0x0a)
+                    {
+                        if(!fread(caractere, 1, 1, entrada))
+                            break;
+                    }
+                }
+                else if(strcmp(linha, "STA") == 0) {
                     inserir_cod(datacodigo, STA, obter_dado_cod(entrada), true);
                 }
                 else if (strcmp(linha, "LDA") == 0) {
