@@ -2,15 +2,26 @@
 ; x = a * b
 
 .DATA
-A DB 7
-B DB 8
+A DB -7
+B DB -8
 X DB ?
-Z DB 255
+Y DB 1
+Z DB -1
 
 .CODE
 .ORG 0
 LDA A
-JZ 8
+JN 4
+JZ 18
+JMP 12
+NOT
+ADD Y
+STA A
+LDA B
+NOT
+ADD Y
+STA B
+JMP 0
 ADD Z
 STA A
 LDA X

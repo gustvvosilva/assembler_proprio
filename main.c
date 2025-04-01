@@ -66,8 +66,14 @@ void obter_tokens(FILE *entrada, DATACODIGO *datacodigo, DATAVALOR *datavalor) {
                 else if (strcmp(linha, "ADD") == 0) {
                     inserir_cod(datacodigo, ADD, obter_dado_cod(entrada), true, linha_entrada);
                 }
+                else if (strcmp(linha, "NOT") == 0) {
+                    inserir_cod(datacodigo, NOT, 0, false, linha_entrada);
+                }
                 else if (strcmp(linha, "JMP") == 0) {
                     inserir_cod(datacodigo, JMP, obter_endereco_cod(entrada), true, linha_entrada);
+                }
+                else if (strcmp(linha, "JN") == 0) {
+                    inserir_cod(datacodigo, JN, obter_endereco_cod(entrada), true, linha_entrada);
                 }
                 else if (strcmp(linha, "JZ") == 0) {
                     inserir_cod(datacodigo, JZ, obter_endereco_cod(entrada), true, linha_entrada);

@@ -209,6 +209,7 @@ __uint8_t obter_dado_val(FILE *file2) {
                 }
                 else
                 {
+                    // Converte valores negativos implicitamente.
                     valor = atoi(linha);
                     break;
                 }
