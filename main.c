@@ -7,6 +7,7 @@ void obter_tokens(FILE *entrada, DATACODIGO *datacodigo, DATAVALOR *datavalor) {
     int i = 0;
     bool lendo_data = false;
     bool lendo_code = false;
+    int linha_entrada = 0;
 
     while(fread(caractere, 1, 1, entrada)) {
         
@@ -54,19 +55,27 @@ void obter_tokens(FILE *entrada, DATACODIGO *datacodigo, DATAVALOR *datavalor) {
                         if(!fread(caractere, 1, 1, entrada))
                             break;
                     }
+                    linha_entrada--;
                 }
                 else if(strcmp(linha, "STA") == 0) {
-                    inserir_cod(datacodigo, STA, obter_dado_cod(entrada), true);
+                    inserir_cod(datacodigo, STA, obter_dado_cod(entrada), true, linha_entrada);
                 }
                 else if (strcmp(linha, "LDA") == 0) {
-                    inserir_cod(datacodigo, LDA, obter_dado_cod(entrada), true);               
+                    inserir_cod(datacodigo, LDA, obter_dado_cod(entrada), true, linha_entrada);               
                 }
                 else if (strcmp(linha, "ADD") == 0) {
-                    inserir_cod(datacodigo, ADD, obter_dado_cod(entrada), true);
+                    inserir_cod(datacodigo, ADD, obter_dado_cod(entrada), true, linha_entrada);
+                }
+                else if (strcmp(linha, "JMP") == 0) {
+                    inserir_cod(datacodigo, JMP, obter_endereco_cod(entrada), true, linha_entrada);
+                }
+                else if (strcmp(linha, "JZ") == 0) {
+                    inserir_cod(datacodigo, JZ, obter_endereco_cod(entrada), true, linha_entrada);
                 }
                 else if (strcmp(linha, "HLT") == 0) {
-                    inserir_cod(datacodigo, HLT, 0, false);
+                    inserir_cod(datacodigo, HLT, 0, false, linha_entrada);
                 }
+                linha_entrada++;
             }
 
             limpa_linha(linha);
@@ -131,7 +140,14 @@ bool inserir_tokens(DATACODIGO *datacodigo, DATAVALOR *datavalor) {
         {
             i += 2;
             fseek(memoria, i, SEEK_SET);
-            endereco = (procurar_variavel(datavalor->prox, datacodigo_aux->variavel) - 4) / 2;
+            if(datacodigo_aux->instrucao >= 0x10 && datacodigo_aux->instrucao <= 0x30)
+            {
+                endereco = (procurar_variavel(datavalor->prox, datacodigo_aux->variavel) - 4) / 2;
+            }
+            else
+            {
+                endereco = procurar_linha(datacodigo->prox, datacodigo_aux->variavel);
+            }
             fwrite(&endereco, 1, 1, memoria);
         }
         datacodigo_aux = datacodigo_aux->prox;

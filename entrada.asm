@@ -1,14 +1,21 @@
 ; Comentário
-; x = a + b
+; x = a * b
 
 .DATA
-A DB 50
-B DB 10
+A DB 7
+B DB 8
 X DB ?
+Z DB 255
 
 .CODE
 .ORG 0
-LDA A    ; a
-ADD B    ; b
-STA X    ; x
+LDA A
+JZ 8
+ADD Z
+STA A
+LDA X
+ADD B
+STA X
+JMP 0
+LDA X
 HLT

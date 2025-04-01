@@ -5,14 +5,15 @@ DATACODIGO *init_datacodigo() {
     nova->instrucao = 0;
     nova->variavel = 0;
     nova->tem2bytes = false;
+    nova->endereco = 0;
     nova->prox = NULL;
     return nova;
 }
 
-void inserir_cod(DATACODIGO *datacodigo, __uint8_t instrucao, __uint8_t variavel, bool tem2bytes) {
+void inserir_cod(DATACODIGO *datacodigo, __uint8_t instrucao, __uint8_t variavel, bool tem2bytes, int linha_entrada) {
 
     if(datacodigo->prox != NULL) {
-        inserir_cod(datacodigo->prox, instrucao, variavel, tem2bytes);
+        inserir_cod(datacodigo->prox, instrucao, variavel, tem2bytes, linha_entrada);
         return;
     }
 
@@ -20,6 +21,7 @@ void inserir_cod(DATACODIGO *datacodigo, __uint8_t instrucao, __uint8_t variavel
     nova->instrucao = instrucao;
     nova->variavel = variavel;
     nova->tem2bytes = tem2bytes;
+    nova->endereco = linha_entrada;
     nova->prox = NULL;
     datacodigo->prox = nova;
     return;
@@ -76,6 +78,53 @@ __uint8_t obter_dado_cod(FILE *file) {
         }
     }
     return variavel[0];
+}
+
+__uint8_t obter_endereco_cod(FILE *file) {
+
+    char caractere[1];
+    char linha[8] = {0};
+    int i = 0;
+    __uint8_t endereco;
+
+    for(;;) {
+
+        fread(caractere, 1, 1, file);
+        // printf("C %c\n", *caractere);
+
+        if(*caractere != 32 && *caractere != 10)
+        {
+            linha[i] = *caractere;
+            i++;
+        }
+        else
+        {
+            printf(">L %s\n", linha);
+            // printf("kkkkkkk %d\n", strcmp(linha, "ADD"));
+
+            endereco = atoi(linha);
+            break;
+        }
+    }
+    return endereco;
+}
+
+__uint8_t procurar_linha(DATACODIGO *datacodigo, __uint8_t linha) {
+
+    DATACODIGO *auxiliar = datacodigo;
+    __uint8_t endereco = 0;
+
+    while(auxiliar != NULL && auxiliar->endereco != linha)
+    {
+        if(auxiliar->tem2bytes)
+            endereco += 2;
+        else
+            endereco += 1;
+
+        auxiliar = auxiliar->prox;
+    }
+
+    return endereco;
 }
 
 DATAVALOR *init_datavalor() {
